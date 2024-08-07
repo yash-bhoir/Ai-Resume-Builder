@@ -36,7 +36,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
   console.log("Request Body:", req.body);
 
   // Correctly extract `id` from `req.body`
-  const { id } = req.body;
+    const { id } = req.body;
 
   if (!id) {
     throw new ApiError(400, "Product ID is required.");
@@ -58,8 +58,7 @@ const deleteProduct = asyncHandler(async (req, res) => {
 
 
 const editProduct = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const { productName, productCategory, imageofProduct, description, productPrice, stock } = req.body;
+  const { id, productName, productCategory, imageofProduct, description, productPrice, stock } = req.body;
 
   if (!id) {
     throw new ApiError(400, "Product ID is required.");
@@ -72,7 +71,7 @@ const editProduct = asyncHandler(async (req, res) => {
   try {
     const updatedProduct = await prisma.product.update({
       where: {
-        id: parseInt(id, 10), // Ensure id is in the correct format
+        id: id, 
       },
       data: {
         productName,
@@ -91,4 +90,31 @@ const editProduct = asyncHandler(async (req, res) => {
   }
 });
 
-export { addProduct ,deleteProduct ,editProduct};
+
+const getProductsByUser = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    throw new ApiError(400, "User ID is required.");
+  }
+
+  try {
+    const userProducts = await prisma.product.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+
+    if (!userProducts.length) {
+      throw new ApiError(404, "No products found for this user.");
+    }
+
+    return res.status(200).json(new ApiResponse(200, userProducts, "Products fetched successfully"));
+  } catch (error) {
+    console.error("Error fetching user products:", error);
+    throw new ApiError(500, "An error occurred while fetching the products.");
+  }
+});
+
+
+export { addProduct, deleteProduct, editProduct, getProductsByUser };

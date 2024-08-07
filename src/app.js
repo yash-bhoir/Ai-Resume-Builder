@@ -4,6 +4,8 @@ import cors from 'cors';
 import userRoute from './routes/user.router.js';
 import emailRoute from './routes/email.router.js';
 import product from './routes/product.router.js';
+import Category from './routes/category.router.js';
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -30,5 +32,7 @@ app.use(cookieParser());
 app.use('/api/v1/users', userRoute);
 app.use('/api/v1/email', emailRoute);
 app.use('/api/v1/products', product);
+app.use('/api/v1/category', Category);
+
 
 export default app;

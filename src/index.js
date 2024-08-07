@@ -5,7 +5,7 @@ dotenv.config({ path: "./.env" });
 
 const startServer = async () => {
   try {
-    const port = process.env.PORT || 8081;
+    const port = process.env.PORT || 8080;
     app.listen(port, () => {
       console.log(`App is listening on port: ${port}`);
     });
