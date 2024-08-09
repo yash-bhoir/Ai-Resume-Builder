@@ -116,8 +116,6 @@ const loginUser = asyncHandler(async (req, res) => {
     }
   });
 
- 
-
   const options = {
     httpOnly: true,
     secure: true
@@ -130,15 +128,24 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
+  const logoutToken = req.cookies.accessToken || req.body.accessToken;
+
+  if (!logoutToken) {
+    throw new ApiError(401, "Unauthorized request: No refresh token provided");
+  }
+
+  const decodedToken = jwt.verify(logoutToken, process.env.ACCESS_TOKEN_SECRET);
+  console.log('Decoded Token:', decodedToken);
+
   await prisma.user.update({
-    where: { id: req.user.id },
-    data: { refreshToken: null },
+    where: { id: decodedToken._id },
+    data: { refreshToken: null},
   });
 
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
-    sameSite: 'Strict', // Prevent CSRF attacks
+    secure: process.env.NODE_ENV === 'production', 
+    sameSite: 'Strict', 
   };
 
   res
@@ -148,20 +155,29 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, 'User logged out successfully'));
 });
 
-
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  const incomingRefreshToken = req.cookies.refreshToken 
 
   if (!incomingRefreshToken) {
-    throw new ApiError(401, "Unauthorized request");
+    throw new ApiError(401, "Unauthorized request: No refresh token provided");
   }
 
   try {
+    const checkToken = await prisma.user.findFirst({
+      where: { refreshToken: incomingRefreshToken }
+    });
+
+    if (!checkToken) {
+      throw new ApiError(401, "Unauthorized request: Invalid refresh token");
+    }
+
+    console.log(checkToken);
+
     const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
     console.log('Decoded Token:', decodedToken);
 
     const user = await prisma.user.findUnique({
-      where: { id: decodedToken._id } 
+      where: { id: decodedToken._id }
     });
 
     if (!user) {
@@ -175,6 +191,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+
     };
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user.id);
@@ -195,5 +212,5 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-
 export { registerUser, loginUser, logoutUser, generateAccessAndRefreshTokens, refreshAccessToken };
+

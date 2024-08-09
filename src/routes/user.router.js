@@ -12,7 +12,7 @@ router.route("/refresh-token").post(generateAccessAndRefreshTokens);
 
 // //secure route
 router.route("/logout").post(verifyJWT, logoutUser);
-router.route("/refreshAccessToken").post(refreshAccessToken);
+router.route("/refreshAccessToken").post(verifyJWT, refreshAccessToken);
 
 
 
