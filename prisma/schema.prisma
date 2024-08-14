@@ -13,25 +13,5 @@ model User {
   username     String
   password     String
   refreshToken String?
-  products     Product[]  @relation("UserProducts")
-  categories   Category[] @relation("UserCategories")
 }
 
-model Product {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  productName     String
-  productCategory String
-  imageofProduct  String
-  description     String
-  productPrice    Float
-  stock           Int
-  addedBy         User     @relation("UserProducts", fields: [userId], references: [id])
-  userId          String   @db.ObjectId
-}
-
-model Category {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  categoryName String
-  createdBy User   @relation("UserCategories", fields: [userId], references: [id])
-  userId    String @db.ObjectId
-}
